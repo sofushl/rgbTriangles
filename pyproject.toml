@@ -1,0 +1,8 @@
+[project]
+name = "rgbTriangles"
+version = "0.1.0"
+description = "MicroPython NeoPixel controller for Raspberry Pi Pico W"
+requires-python = ">=3.9"
+readme = "README.md"
+dependencies = ["mpremote"]
+
