@@ -1,0 +1,10 @@
+{
+    "neopixel": {
+        "repo": "https://github.com/blaz-r/pi_pico_neopixel",
+        "commit": "d1a9c8508fc2f7e1f803460126fba6a64135f506",
+        "path": "neopixel.py",
+        "source": "https://raw.githubusercontent.com/blaz-r/pi_pico_neopixel/d1a9c8508fc2f7e1f803460126fba6a64135f506/neopixel.py",
+        "sha256": "54d95f4fd528c7ef4102c0b6ff55cdf537884037303aa2d6598be7e4eea98737",
+        "dest": "src/neopixel.py"
+    }
+}
