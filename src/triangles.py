@@ -27,7 +27,7 @@ def light_one(num, rgb):
 
 
 def blank():
-    pixels.clear
+    pixels.clear()
 
 
 def brightness(l):
