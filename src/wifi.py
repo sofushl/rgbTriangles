@@ -15,7 +15,7 @@ STATUS = {
 
 
 def make_connection(attempts=3):
-    network.country("NO")  # use your own country code
+    network.country("NO")
 
     wlan = WLAN(STA_IF)
     wlan.disconnect()
@@ -23,7 +23,7 @@ def make_connection(attempts=3):
     sleep(1)
     wlan.active(True)
     sleep(1)
-    wlan.config(pm=0xA11140)  # disable power saving
+    wlan.config(pm=0xA11140)
 
     for attempt in range(1, attempts + 1):
         print(f"Connect attempt {attempt}/{attempts}")
