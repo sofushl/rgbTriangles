@@ -1,51 +1,64 @@
-# from machine import ADC
+import _thread
 from time import sleep
 
 import machine
-import rgbTriangles
+
+import sock
 import triangles
 import wifi
-import sock
-from colors import COLORS, RAINBOW_SEQUENCE
+from colors import COLORS
 
 mode = "red"
-
-triangles.brightness(20)
-
+speed = "100"
+brightness = "20"
+triangles.brightness(int(brightness))
+r, g, b = COLORS["off"]
 rgb = COLORS["off"]
+wlan = wifi.make_connection()
+
+def f(x):
+    return 0.1 * 20 ** (x / 255)
+
 
 def update_triangles():
-    if mode in COLORS:
-        rgbTriangles.fill(COLORS[mode])
-    elif mode == "CHASE":
-        rgbTriangles.chase(0)
-    elif mode == "CYCLE_RAINBOW":
-        rgbTriangles.cycle_rainbow(0.2)
-    elif mode == "CYCLE_RAINBOW_TRIANGLES":
-        rgbTriangles.cycle_rainbow_triangles(0.1)
-    elif mode == "CYCLE_TRIANGLES_RAINBOW":
-        rgbTriangles.cycle_triangles_rainbow(0.1)
-    elif mode == "RAINBOW_CYCLE":
-        rgbTriangles.rainbow_cycle(0)
-    elif mode == "RAINBOW_CYCLE_TRIANGLES":
-        rgbTriangles.rainbow_cycle_triangles(0)
-    elif mode == "blank":
-        triangles.blank()
-    elif mode == "rainbow_loop":
-        triangles.rainbow_loop(0.5)
-    elif mode == "rainbow_triangles_cycle":
-        triangles.rainbow_triangles_cycle(16)
-    elif mode == "rainbow_triangles_flow":
-        triangles.rainbow_triangles_flow(0.1, 4)
-    elif mode == "rainbow_flow":
-        triangles.rainbow_flow(0.1, 2)
-    elif mode == "rainbow_wave":
-        triangles.rainbow_wave(0.01, 16)
+    while True:
+        if not wlan.isconnected():
+            wifi.make_connection()
+        elif mode in COLORS:
+            triangles.fill(COLORS[mode])
+        elif mode in ["STATIC:COLOUR", "COLOUR", "STATIC", "FILL"]:
+            triangles.fill((r, g, b))
+        elif mode == "LINEAR:CHASE":
+            triangles.linear_chase((r, g, b), 0.01 * f(speed))
+        elif mode == "CYCLE:RAINBOW":
+            triangles.cycle_rainbow(0.2 * f(speed))
+        elif mode == "CYCLE:RAINBOW-TRIANGLES":
+            triangles.cycle_rainbow_triangles(0.1 * f(speed))
+        elif mode == "CYCLE:TRIANGLES-RAINBOW":
+            triangles.cycle_triangles_rainbow(0.1 * f(speed))
+        elif mode == "LINEAR:CYCLE":
+            triangles.linear_cycle(0.01 * f(speed))
+        elif mode == "LINEAR:CYCLE_TRIANGLES":
+            triangles.linear_cycle_triangles(0.01 * f(speed))
+        elif mode == "SINE:TRIANGLES-CYCLE":
+            triangles.sine_triangles_cycle(16 * f(speed))
+        elif mode == "SINE:TRIANGLES-FLOW":
+            triangles.sine_triangles_flow(0.1 * f(speed), 4)
+        elif mode == "SINE:FLOW":
+            triangles.sine_flow(0.1 * f(speed), 2)
+        elif mode == "SINE:WAVE":
+            triangles.sine_wave(0.01 * f(speed), 16)
 
 
-wifi.make_connection()
+_thread.start_new_thread(update_triangles, ())
 if __name__ == "__main__":
     while True:
-        mode = sock.listen()
-        print(mode)
-        update_triangles()
+        mode, brightness, speed, r, g, b = sock.listen()
+        mode = mode.upper()
+        r = int(r)
+        g = int(g)
+        b = int(b)
+        brightness = int(brightness)
+        speed = int(speed)
+        triangles.brightness(brightness)
+        print(f"Mode: {mode}\nBrightness: {brightness}\nSpeed: {speed}\nRGB: {r} {g} {b}")

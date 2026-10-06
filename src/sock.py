@@ -1,9 +1,10 @@
-import socket
 import json
+import socket
+
 import network
 
 wlan = network.WLAN(network.STA_IF)
-wlan.config(pm=0xa11140)
+wlan.config(pm=0xA11140)
 print(wlan.ifconfig())
 
 s = socket.socket()
@@ -15,7 +16,6 @@ print("Listening on port 80")
 
 def read_request(conn):
     data = b""
-# read until the end of the headers
     while b"\r\n\r\n" not in data:
         chunk = conn.recv(512)
         if not chunk:
@@ -24,7 +24,6 @@ def read_request(conn):
 
     head, _, body = data.partition(b"\r\n\r\n")
 
-    # read the rest of the body if it's longer than what we've got
     length = 0
     for line in head.split(b"\r\n"):
         if line.lower().startswith(b"content-length:"):
@@ -35,24 +34,33 @@ def read_request(conn):
             break
         body += chunk
 
-    return head.decode(), body.decode()
+    return body.decode()
+
 
 def listen():
     while True:
         conn, addr = s.accept()
-        print("Connection from", addr)
         try:
-            head, body = read_request(conn)
-            print(head.split("\r\n")[0])  # request line, e.g. "POST / HTTP/1.1"
-            try:
-                print("Parsed:", json.loads(body))
-            except ValueError:
-                print("Body:", body)
-            conn.send("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nConnection: close\r\n\r\nok")
+            body = read_request(conn)
+            conn.send(
+                "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nConnection: close\r\n\r\nok\n"
+            )
             conn.close()
             data = json.loads(body)
-            return data.get("mode") 
+            return (
+                data.get("mode"),
+                data.get("brightness"),
+                data.get("speed"),
+                data.get("r"),
+                data.get("g"),
+                data.get("b"),
+            )
         except Exception as e:
             print("Error:", e)
+            try:
+                conn.send(
+                    "HTTP/1.1 400 ERROR\r\nContent-Type: text/plain\r\nConnection: close\r\n\r\nErr\n"
+                )
+            except:
+                print("Error:", e)
             conn.close()
-
